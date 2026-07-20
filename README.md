@@ -15,8 +15,15 @@
 
 
 ### [개발 일정]
-7.20 - Kaggle 데이터셋 다운로드, 컬럼 분석/전처리, RandomForestRegressor 베이스라인 학습
-7.21 - 피처 엔지니어링으로 모델 성능 개선 + FastAPI /predict 엔드포인트 구현
-7.22 - Streamlit UI 연동 (조건 5개 입력 → 예측가 + 격차 출력)
-7.23 - 에러 처리 + LLM 체크리스트 생성 기능 추가 + GitHub 정리
-7.24 - 발표 자료 준비 및 리허설
+- Day1 (7.20) ✅ 완료
+  - 데이터 확보 및 전처리 (결측치 처리, 원-핫 인코딩)
+  - RandomForestRegressor 베이스라인 모델 학습 (R² 0.852)
+  - 모델 저장 및 GitHub 연동
+- Day2 (7.21) 예정
+  - 모델 성능 개선 + FastAPI 서버 구현
+- Day3 (7.22) 예정
+  - Streamlit UI 연동
+- Day4 (7.23) 예정
+  - 에러 처리 + LLM 연동 + GitHub 정리
+- Day5 (7.24) 예정
+  - 발표 준비 및 리허설
