@@ -91,7 +91,6 @@ if st.button("추천받기", type="primary"):
             system_prompt = "당신은 중고폰 구매를 도와주는 친절하고 실용적인 조언가입니다."
             user_prompt = f"예산 {budget:,}원, 사용기간 약 {target_days}일 조건에서 아래 후보들을 찾았습니다.\n\n{candidates_text}\n\n이 중 가장 추천할 만한 1~2개를 골라, 그 이유를 3줄 이내로 간단히 설명해주세요. 가격대비 스펙 관점에서 설명해주세요."
             explanation = ask_llm(system_prompt, user_prompt)
-            st.write("디버그용 원본 값:", repr(explanation))
 
         st.subheader("🤖 AI 추천 코멘트")
         st.info(explanation)

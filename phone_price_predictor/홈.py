@@ -21,9 +21,9 @@ with col1:
         st.page_link("pages/3_모델_비교_랭킹.py", label="바로가기 →", icon="📉")
 
     with st.container(border=True):
-        st.subheader("🔍 내 폰 진단")
+        st.subheader("🔍 거래 평가")
         st.write("예전에 산 폰이 지금 얼마나 값어치가 남았는지 확인해요.")
-        st.page_link("pages/5_내_폰_진단.py", label="바로가기 →", icon="🔍")
+        st.page_link("pages/5_거래_평가.py", label="바로가기 →", icon="🔍")
 
 with col2:
     with st.container(border=True):
