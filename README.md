@@ -19,8 +19,10 @@
   - 데이터 확보 및 전처리 (결측치 처리, 원-핫 인코딩)
   - RandomForestRegressor 베이스라인 모델 학습 (R² 0.852)
   - 모델 저장 및 GitHub 연동
-- Day2 (7.21) 예정
-  - 모델 성능 개선 + FastAPI 서버 구현
+- Day2 (7.21) ✅ 완료
+  - 피처 중요도 분석 (신품가가 가격 예측에 가장 큰 영향, 약 58%)
+  - FastAPI 서버 구현 (/predict 엔드포인트)
+  - Swagger UI(/docs)에서 정상 응답 확인 (200 OK)
 - Day3 (7.22) 예정
   - Streamlit UI 연동
 - Day4 (7.23) 예정
