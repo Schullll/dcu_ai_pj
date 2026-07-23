@@ -18,6 +18,10 @@ memory_list = list(storage_options.keys())
 storage_gb = st.selectbox("저장용량 (GB)", memory_list)
 new_price = storage_options[storage_gb]
 
+# 표본이 적은 고용량 옵션에 대한 신뢰도 안내
+if storage_gb >= 512:
+    st.warning("⚠️ 해당 저장용량은 학습 표본이 적어 예측 신뢰도가 낮을 수 있습니다. 참고용으로만 확인해주세요.")
+
 # ── 2. 선택한 모델의 스펙 정보 표시 (한글 라벨 + 2단 배치) ──
 st.subheader(f"{model_name} · {storage_gb}GB 스펙 정보")
 
@@ -103,6 +107,6 @@ if st.button("시세 확인하기", type="primary"):
         st.altair_chart((bars + text).properties(height=250), use_container_width=True)
 
         st.caption(
-            "※ 번개장터 실거래 데이터(781건) 기반 회귀 모델 + 실제 중고폰 시장 벤치마크 "
+            "※ 번개장터 실거래 데이터 기반 회귀 모델 + 실제 중고폰 시장 벤치마크 "
             "기준 등급별 보정(S/A/B/F)을 결합한 예측 결과입니다."
         )

@@ -35,12 +35,11 @@ def get_predicted_price(model_name, storage_gb, condition):
     return None
 
 
-# ── 1. 사용자 입력 ──────────────────────────────────────
 budget = st.number_input("예산 (원)", min_value=0, max_value=4000000, value=500000, step=50000)
 target_condition = st.selectbox(
     "원하는 상태 등급",
     ["S", "A", "B", "F"],
-    index=2,  # 기본값 B(일반 사용감) — 가장 무난한 기준
+    index=2,
     help="S: 미개봉/무잔상, A: 상태 좋음, B: 일반 사용감, F: 파손/고장/부품용"
 )
 
@@ -48,7 +47,6 @@ if st.button("추천받기", type="primary"):
     results = []
     progress = st.progress(0, text="모든 모델 확인 중...")
 
-    # 30개 모델 × 각 모델의 모든 저장용량 옵션을 전부 순회
     all_combinations = []
     for m, spec in phone_models.items():
         for storage in spec["storage_options"].keys():
@@ -57,21 +55,27 @@ if st.button("추천받기", type="primary"):
     for i, (m, storage) in enumerate(all_combinations):
         price = get_predicted_price(m, storage, target_condition)
         if price is not None:
-            results.append({"모델": f"{m} {storage}GB", "예상가(원)": price})
+            results.append({
+                "모델": f"{m} {storage}GB",
+                "예상가(원)": price,
+                "용량": storage
+            })
         progress.progress((i + 1) / len(all_combinations), text=f"확인 중... ({i+1}/{len(all_combinations)})")
 
     progress.empty()
 
     result_df = pd.DataFrame(results)
-    # 예산 이하인 것들만 필터링, 예산에 가까운 순(비싼 순)으로 정렬
     within_budget = result_df[result_df["예상가(원)"] <= budget].sort_values("예상가(원)", ascending=False)
 
     if len(within_budget) > 0:
         st.success(f"예산 {budget:,}원 이내, 등급 '{target_condition}' 기준으로 {len(within_budget)}개 조합을 찾았어요!")
-        st.dataframe(within_budget.reset_index(drop=True), use_container_width=True)
 
-        # ── LLM 추천 코멘트 생성 ──────────────────────────
-        # 상위 5개 후보만 추려서 프롬프트에 담아 LLM에게 "어떤 걸 추천할지" 요청
+        within_budget = within_budget.copy()
+        within_budget["비고"] = within_budget["용량"].apply(lambda x: "⚠️ 표본 적음" if x >= 512 else "")
+        display_df = within_budget[["모델", "예상가(원)", "비고"]]
+
+        st.dataframe(display_df.reset_index(drop=True), use_container_width=True)
+
         with st.spinner("AI가 추천 이유를 정리하는 중..."):
             top5 = within_budget.head(5).to_dict(orient="records")
             candidates_text = "\n".join([f"- {r['모델']}: 약 {r['예상가(원)']:,}원" for r in top5])
@@ -92,6 +96,7 @@ if st.button("추천받기", type="primary"):
         st.warning("해당 예산으로는 조건에 맞는 모델이 없어요. 예산을 늘리거나 등급을 조정해보세요.")
 
     st.caption(
-        "※ 번개장터 실거래 데이터(781건) 기반 회귀 모델 + 시장 벤치마크 등급 보정을 "
-        "결합한 예측 결과입니다."
+        "※ 번개장터 실거래 데이터 기반 회귀 모델 + 시장 벤치마크 등급 보정을 "
+        "결합한 예측 결과입니다. '⚠️ 표본 적음' 표시가 있는 조합(저장용량 512GB 이상)은 "
+        "학습 표본이 적어 예측 신뢰도가 낮을 수 있습니다."
     )

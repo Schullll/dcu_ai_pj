@@ -7,7 +7,7 @@ from phone_models import phone_models
 st.set_page_config(page_title="모델 비교 & 랭킹", page_icon="📉")
 
 st.title("📉 모델 비교 & 감가 랭킹")
-st.write("여러 모델의 예상가를 겹쳐 비교하거나, 특정 등급 기준 전체 랭킹을 확인해요.")
+st.write("원하는 모델·용량·등급 조건을 직접 설정해 비교하거나, 특정 등급 기준 전체 랭킹을 확인해요.")
 
 
 def get_predicted_price(model_name, storage_gb, condition):
@@ -38,40 +38,48 @@ def get_predicted_price(model_name, storage_gb, condition):
 tab1, tab2 = st.tabs(["📊 모델 직접 비교", "🏆 전체 랭킹"])
 
 # ══════════════════════════════════════════════════════
-# 탭1: 사용자가 고른 2~3개 모델을 등급별로 나란히 비교
+# 탭1: 사용자가 각 조건(모델+용량+등급)을 직접 설정해서 비교
 # ══════════════════════════════════════════════════════
 with tab1:
-    st.subheader("비교할 모델 선택 (2~3개)")
-    selected_models = st.multiselect(
-        "모델 선택", list(phone_models.keys()), max_selections=3,
-        default=list(phone_models.keys())[:2]
-    )
+    st.subheader("비교할 조건 설정")
 
-    condition_for_compare = st.selectbox(
-        "비교 기준 등급", ["S", "A", "B", "F"], index=1, key="compare_condition"
-    )
+    num_items = st.radio("비교할 개수", [2, 3], horizontal=True)
 
-    if len(selected_models) >= 2 and st.button("비교하기", type="primary"):
+    compare_items = []
+    cols = st.columns(num_items)
+
+    for i in range(num_items):
+        with cols[i]:
+            st.markdown(f"**조건 {i+1}**")
+            m_name = st.selectbox("모델", list(phone_models.keys()), key=f"model_{i}")
+            m_spec = phone_models[m_name]
+            m_storage = st.selectbox("용량(GB)", list(m_spec["storage_options"].keys()), key=f"storage_{i}")
+            m_condition = st.selectbox("등급", ["S", "A", "B", "F"], index=1, key=f"condition_{i}")
+
+            if m_storage >= 512:
+                st.caption("⚠️ 표본 적음, 참고용")
+
+            compare_items.append({"model": m_name, "storage": m_storage, "condition": m_condition})
+
+    if st.button("비교하기", type="primary"):
         compare_results = []
 
-        for m in selected_models:
-            top_storage = max(phone_models[m]["storage_options"].keys())
-            price = get_predicted_price(m, top_storage, condition_for_compare)
-
+        for item in compare_items:
+            price = get_predicted_price(item["model"], item["storage"], item["condition"])
             if price is not None:
-                compare_results.append({"모델": f"{m} ({top_storage}GB)", "예상가": price})
+                label = f"{item['model']} {item['storage']}GB ({item['condition']}등급)"
+                compare_results.append({"조건": label, "예상가": price})
 
         if compare_results:
-            compare_df = pd.DataFrame(compare_results).sort_values("예상가", ascending=True)  # 가로막대는 오름차순 정렬해야 큰 값이 위로 감
+            compare_df = pd.DataFrame(compare_results).sort_values("예상가", ascending=True)
 
-            # 가로 막대그래프 + 막대 끝에 금액 라벨
             bars = (
                 alt.Chart(compare_df)
                 .mark_bar(color="#3498db")
                 .encode(
-                    y=alt.Y("모델:N", sort="-x", title=None),
+                    y=alt.Y("조건:N", sort="-x", title=None),
                     x=alt.X("예상가:Q", title="예상가(원)"),
-                    tooltip=["모델", "예상가"]
+                    tooltip=["조건", "예상가"]
                 )
             )
             text = bars.mark_text(align="left", dx=5, fontSize=13).encode(
@@ -79,17 +87,13 @@ with tab1:
             )
 
             st.altair_chart((bars + text).properties(height=100 + len(compare_df) * 60), use_container_width=True)
-
             st.dataframe(compare_df.sort_values("예상가", ascending=False).reset_index(drop=True), use_container_width=True)
-
-            st.caption(
-                f"※ 선택한 등급({condition_for_compare}) 기준, 각 모델의 최대 저장용량으로 비교한 결과입니다."
-            )
         else:
             st.error("⚠️ 예측에 실패했습니다. FastAPI 서버가 켜져 있는지 확인해주세요.")
 
 # ══════════════════════════════════════════════════════
-# 탭2: 30개 모델 전체를 특정 등급 기준으로 순위 매기기 (표 형태 유지)
+# 탭2: 30개 모델 전체를 특정 등급 기준으로 순위 매기기
+# (각 모델의 최대 저장용량 기준으로 통일해서 비교)
 # ══════════════════════════════════════════════════════
 with tab2:
     st.subheader("전체 모델 랭킹")
@@ -107,7 +111,11 @@ with tab2:
             price = get_predicted_price(m, top_storage, ranking_condition)
 
             if price is not None:
-                ranking_data.append({"모델": f"{m} ({top_storage}GB)", "예상가(원)": price})
+                ranking_data.append({
+                    "모델": f"{m} ({top_storage}GB)",
+                    "예상가(원)": price,
+                    "최대용량": top_storage
+                })
 
             progress.progress((i + 1) / len(model_list), text=f"계산 중... ({i+1}/{len(model_list)})")
 
@@ -117,12 +125,17 @@ with tab2:
             ranking_df = pd.DataFrame(ranking_data).sort_values("예상가(원)", ascending=False).reset_index(drop=True)
             ranking_df.index = ranking_df.index + 1
 
+            ranking_df["비고"] = ranking_df["최대용량"].apply(
+                lambda x: "⚠️ 표본 적음" if x >= 512 else ""
+            )
+            display_df = ranking_df[["모델", "예상가(원)", "비고"]]
+
             st.write(f"**등급 '{ranking_condition}' 기준, 예상가 높은 순 랭킹**")
-            st.dataframe(ranking_df, use_container_width=True)
+            st.dataframe(display_df, use_container_width=True)
 
             st.caption(
-                "※ 각 모델의 최대 저장용량 기준이며, 번개장터 실거래 데이터(781건) 기반 "
+                "※ 각 모델의 최대 저장용량 기준이며, 번개장터 실거래 데이터 기반 "
                 "회귀 모델 + 시장 벤치마크 등급 보정을 결합한 예측 결과입니다. "
-                "일부 표본이 적은 인접 모델(예: 프로/프로맥스)은 예측 순서가 실제 신품가 순서와 "
-                "다르게 나타날 수 있습니다."
+                "'⚠️ 표본 적음' 표시가 있는 모델(저장용량 512GB 이상)은 학습 표본이 적어 "
+                "예측 순서가 실제 신품가 순서와 다르게 나타날 수 있습니다."
             )

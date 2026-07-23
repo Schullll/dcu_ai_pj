@@ -10,7 +10,6 @@ st.write("내가 실제로 사거나 팔려는 가격이, 그 조건(모델·용
 
 st.subheader("조건 입력")
 
-# ── 1. 모델 및 저장용량 선택 ──────────────────────────────
 model_name = st.selectbox("모델 선택", list(phone_models.keys()))
 base_spec = phone_models[model_name]
 
@@ -19,23 +18,23 @@ memory_list = list(storage_options.keys())
 storage_gb = st.selectbox("저장용량 (GB)", memory_list)
 new_price = storage_options[storage_gb]
 
-# ── 2. 상태 등급 선택 ─────────────────────────────────────
+# 표본이 적은 고용량 옵션에 대한 신뢰도 안내
+if storage_gb >= 512:
+    st.warning("⚠️ 해당 저장용량은 학습 표본이 적어 예측 신뢰도가 낮을 수 있습니다. 참고용으로만 확인해주세요.")
+
 condition = st.selectbox(
     "상태 등급",
     ["S", "A", "B", "F"],
-    index=2,  # 기본값 B(일반 사용감)
+    index=2,
     help="거래 대상 기기의 실제 상태를 선택해주세요. S: 미개봉/무잔상, A: 상태 좋음, B: 일반 사용감, F: 파손/고장"
 )
 
-# ── 3. 실제 거래 가격 입력 (비교 대상) ────────────────────
 my_price = st.number_input(
     "실제 거래 가격(원)", min_value=0, value=200000, step=10000,
     help="내가 실제로 사려는(또는 팔려는) 가격을 입력해주세요."
 )
 
 if st.button("비교하기", type="primary"):
-    # ── 4. FastAPI로 "적정 예상가치" 조회 ───────────────────
-    # 이 값은 모델+용량+등급 조건에서 회귀모델+등급보정을 거친 "정상적인 시세"
     input_data = {
         "brand": base_spec["device_brand"],
         "condition": condition,
@@ -54,7 +53,6 @@ if st.button("비교하기", type="primary"):
         if response.status_code == 200:
             expected_value = response.json()["predicted_price"]
 
-            # ── 5. 적정가치 vs 실제 거래가 비교 ───────────────
             diff = my_price - expected_value
             diff_percent = (diff / expected_value) * 100 if expected_value > 0 else 0
 
@@ -63,7 +61,6 @@ if st.button("비교하기", type="primary"):
             col2.metric("내 거래 가격", f"{my_price:,}원")
             col3.metric("가치 비교", f"{diff_percent:+.1f}%", delta=f"{diff:,}원")
 
-            # 비교 결과에 따라 다른 안내 메시지 표시
             if diff_percent <= -10:
                 st.success("📉 적정 예상가치보다 낮은 가격이에요. 잘 산 편일 가능성이 높아요!")
             elif diff_percent >= 10:
@@ -73,7 +70,6 @@ if st.button("비교하기", type="primary"):
 
             st.divider()
 
-            # ── 6. LLM에게 거래 평가 코멘트 요청 ─────────────
             with st.spinner("AI가 거래 평가 코멘트를 작성하는 중..."):
                 condition_label = {
                     "S": "미개봉/무잔상급", "A": "상태 좋음", "B": "일반 사용감", "F": "파손/고장"
@@ -94,7 +90,7 @@ if st.button("비교하기", type="primary"):
             st.info(explanation)
 
             st.caption(
-                "※ 적정 예상가치는 번개장터 실거래 데이터(781건) 기반 회귀 모델과 "
+                "※ 적정 예상가치는 번개장터 실거래 데이터 기반 회귀 모델과 "
                 "실제 중고폰 시장 벤치마크 기준 등급 보정을 결합한 예측치입니다."
             )
         else:
