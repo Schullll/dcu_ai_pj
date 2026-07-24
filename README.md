@@ -51,15 +51,29 @@ Pricing Dataset, 2013~2020년 해외 시장 기준)으로 베이스라인을 구
 하였으나, 실제 한국 중고시장 특성과 반대되는 결과가 확인되어 Day3에 
 위 데이터로 전면 교체함. 상세 경위는 [주요 개선 과정] 참고.
 
-### 🚀 로컬 실행
+## 🚀 로컬 실행
 
-**백엔드 (터미널 1)**
+**1) 가상환경 생성 (처음 한 번만)**
 ```bash
-pip install -r requirements.txt
+python -m venv .venv
+```
+
+**2) 가상환경 활성화 (Windows 기준)**
+```bash
+.venv\Scripts\activate
+```
+
+**3) 패키지 설치**
+```bash
+python -m pip install -r requirements.txt
+```
+
+**4) 백엔드 실행 (터미널 1)**
+```bash
 uvicorn server:app --reload
 ```
 
-**프론트엔드 (터미널 2)**
+**5) 프론트엔드 실행 (터미널 2, 새 터미널 창)**
 ```bash
 streamlit run 홈.py
 ```
