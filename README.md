@@ -53,11 +53,11 @@ Pricing Dataset, 2013~2020년 해외 시장 기준)으로 베이스라인을 구
 
 ## 🚀 로컬 실행
 
-\`\`\`bash
+​```bash
 pip install -r requirements.txt
 uvicorn server:app --reload    # 백엔드 (터미널 1)
 streamlit run 홈.py             # 프론트엔드 (터미널 2)
-\`\`\`
+​```
 
 ### [개발 일정]
 - Day1 (7.20) ✅ 완료
