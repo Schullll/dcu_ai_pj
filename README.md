@@ -9,6 +9,39 @@ Scikit-learn 회귀 모델이 예측 중고가를 산출합니다.
 ## 🔗 배포 링크
 https://dcu-project2026.onrender.com
 
+## 📁 프로젝트 구조
+
+```
+DCU_PJ/
+└── phone_price_predictor/
+    ├── data/
+    │   └── bunjang_final_data.csv       # 번개장터 크롤링 데이터
+    ├── pages/
+    │   ├── 1_모델별_시세.py               # 등급별 시세 그래프
+    │   ├── 2_예상가.py                    # 예상가 조회 + LLM 설명
+    │   ├── 3_모델_비교_랭킹.py             # 모델 비교 + 전체 랭킹
+    │   ├── 4_예산_맞춤_추천.py             # 예산 기반 추천
+    │   └── 5_거래_평가.py                 # 거래가 적정성 평가
+    ├── 홈.py                             # Streamlit 진입점
+    ├── server.py                         # FastAPI 백엔드
+    ├── crawl_bunjang.py                  # 번개장터 크롤링 스크립트
+    ├── llm_utils.py                      # LLM(GPT) 연동 유틸
+    ├── phone_models.py                   # 모델·스펙·출고가 매핑
+    ├── train_price_model.ipynb           # 모델 학습 (Day1, Kaggle)
+    ├── train_price_model_v2.ipynb        # 모델 학습 (Day3~4, 최종)
+    ├── apple_price_model.joblib          # Apple 학습 모델
+    ├── apple_model_columns.joblib
+    ├── samsung_price_model.joblib        # Samsung 학습 모델
+    ├── samsung_model_columns.joblib
+    ├── Dockerfile                        # 배포용 Docker 설정
+    ├── start.sh                          # 배포 실행 스크립트
+    ├── requirements.txt                  # 패키지 의존성
+    ├── .env                              # 환경변수 (Git 제외)
+    ├── .gitignore
+    ├── .dockerignore
+    └── README.md
+```
+
 ## 🔑 주요 기능
 
 | 기능 | 설명 |
