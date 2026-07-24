@@ -53,27 +53,34 @@ Pricing Dataset, 2013~2020년 해외 시장 기준)으로 베이스라인을 구
 
 ## 🚀 로컬 실행
 
-**1) 가상환경 생성 (처음 한 번만)**
+`phone_price_predictor` 폴더로 이동한 후 아래 명령어를 실행하세요.
+
+**1) 프로젝트 폴더로 이동**
+```bash
+cd phone_price_predictor
+```
+
+**2) 가상환경 생성 (처음 한 번만)**
 ```bash
 python -m venv .venv
 ```
 
-**2) 가상환경 활성화 (Windows 기준)**
+**3) 가상환경 활성화 (Windows 기준)**
 ```bash
 .venv\Scripts\activate
 ```
 
-**3) 패키지 설치**
+**4) 패키지 설치**
 ```bash
 python -m pip install -r requirements.txt
 ```
 
-**4) 백엔드 실행 (터미널 1)**
+**5) 백엔드 실행 (터미널 1)**
 ```bash
 uvicorn server:app --reload
 ```
 
-**5) 프론트엔드 실행 (터미널 2, 새 터미널 창)**
+**6) 프론트엔드 실행 (터미널 2, 새 터미널 창)**
 ```bash
 streamlit run 홈.py
 ```
